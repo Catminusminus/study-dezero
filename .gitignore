@@ -2,3 +2,4 @@
 *.png
 *.dot
 */__pycache__
+*.npz

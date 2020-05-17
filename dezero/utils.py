@@ -1,6 +1,8 @@
 import os
 import subprocess
 import urllib.request
+from dezero import cuda
+
 
 def _dot_var(v, verbose=False):
     name = "" if v.name is None else v.name
@@ -166,3 +168,22 @@ def pair(x):
         return x
     else:
         raise ValueError
+
+
+def logsumexp(x, axis=1):
+    xp = cuda.get_array_module(x)
+    m = x.max(axis=axis, keepdims=True)
+    y = x - m
+    xp.exp(y, out=y)
+    s = y.sum(axis=axis, keepdims=True)
+    xp.log(s, out=s)
+    m += s
+    return m
+
+
+def get_conv_outsize(input_size, kernel_size, stride, pad):
+    return (input_size + pad * 2 - kernel_size) // stride + 1
+
+
+def get_deconv_outsize(size, k, s, p):
+    return s * (size - 1) + k - 2 * p

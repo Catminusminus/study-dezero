@@ -19,13 +19,16 @@ else:
         no_grad,
         as_array,
         as_variable,
-        setup_variable
+        setup_variable,
+        Config,
+        test_mode
     )
     from dezero.layers import Layer
     from dezero.models import Model
     from dezero.dataloaders import Dataloader
     import dezero.functions
     import dezero.datasets
+    import dezero.optimizers
 
 
 setup_variable()

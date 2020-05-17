@@ -120,7 +120,7 @@ class MNIST(Dataset):
     def labels():
         return {0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9'}
 
-"""
+
 class CIFAR10(Dataset):
 
     def __init__(self, train=True,
@@ -329,4 +329,3 @@ def save_cache_npz(data, label, filename, train=False):
         raise
     print(" Done")
     return filepath
-"""

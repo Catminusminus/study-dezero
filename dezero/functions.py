@@ -1,11 +1,12 @@
 import numpy as np
 from dezero.core import Function, as_variable, Variable
-from dezero import utils
+from dezero import utils, cuda, Config
 
 
 class Exp(Function):
     def forward(self, x):
-        y = np.exp(x)
+        xp = cuda.get_array_module(x)
+        y = xp.exp(x)
         return y
 
     def backward(self, gy):
@@ -20,7 +21,8 @@ def exp(x):
 
 class Sin(Function):
     def forward(self, x):
-        y = np.sin(x)
+        xp = cuda.get_array_module(x)
+        y = xp.sin(x)
         return y
 
     def backward(self, gy):
@@ -35,7 +37,8 @@ def sin(x):
 
 class Cos(Function):
     def forward(self, x):
-        y = np.cos(x)
+        xp = cuda.get_array_module(x)
+        y = xp.cos(x)
         return y
 
     def backward(self, gy):
@@ -50,7 +53,8 @@ def cos(x):
 
 class Tanh(Function):
     def forward(self, x):
-        y = np.tanh(x)
+        xp = cuda.get_array_module(x)
+        y = xp.tanh(x)
         return y
 
     def backward(self, gy):
@@ -84,7 +88,8 @@ def reshape(x, shape):
 
 class Transpose(Function):
     def forward(self, x):
-        y = np.transpose(x)
+        xp = cuda.get_array_module(x)
+        y = xp.transpose(x)
         return y
 
     def backward(self, gy):
@@ -122,7 +127,8 @@ class BroadcastTo(Function):
 
     def forward(self, x):
         self.x_shape = x.shape
-        y = np.broadcast_to(x, self.shape)
+        xp = cuda.get_array_module(x)
+        y = xp.broadcast_to(x, self.shape)
         return y
 
     def backward(self, gy):
@@ -269,17 +275,15 @@ class GetItemGrad(Function):
         self.in_shape = in_shape
 
     def forward(self, gy):
-        #xp = dezero.cuda.get_array_module(gy)
-        #gx = xp.zeros(self.in_shape, dtype=gy.dtype)
-        gx = np.zeros(self.in_shape, dtype=gy.dtype)
-        """
+        xp = dezero.cuda.get_array_module(gy)
+        gx = xp.zeros(self.in_shape, dtype=gy.dtype)
+        #gx = np.zeros(self.in_shape, dtype=gy.dtype)
         if xp is np:
             np.add.at(gx, self.slices, gy)
         else:
             xp.scatter_add(gx, self.slices, gy)
         return gx
-        """
-        np.add.at(gx, self.slices, gy)
+        # np.add.at(gx, self.slices, gy)
         return gx
     def backward(self, ggx):
         return get_item(ggx, self.slices)
@@ -297,6 +301,29 @@ def softmax_simple(x, axis=1):
     return y / sum_y
 
 
+class Softmax(Function):
+    def __init__(self, axis=1):
+        self.axis = axis
+
+    def forward(self, x):
+        xp = cuda.get_array_module(x)
+        y = x - x.max(axis=self.axis, keepdims=True)
+        y = xp.exp(y)
+        y /= y.sum(axis=self.axis, keepdims=True)
+        return y
+
+    def backward(self, gy):
+        y = self.outputs[0]()
+        gx = y * gy
+        sumdx = gx.sum(axis=self.axis, keepdims=True)
+        gx -= y * sumdx
+        return gx
+
+
+def softmax(x, axis=1):
+    return Softmax(axis)(x)
+
+
 def softmax_cross_entropy_simple(x, t):
     x, t = as_variable(x), as_variable(t)
     N = x.shape[0]
@@ -308,12 +335,37 @@ def softmax_cross_entropy_simple(x, t):
     y = -1 * sum(tlog_p) / N
     return y
 
+class SoftmaxCrossEntropy(Function):
+    def forward(self, x, t):
+        N = x.shape[0]
+        log_z = utils.logsumexp(x, axis=1)
+        log_p = x - log_z
+        log_p = log_p[np.arange(N), t.ravel()]
+        y = -log_p.sum() / np.float32(N)
+        return y
+
+    def backward(self, gy):
+        x, t = self.inputs
+        N, CLS_NUM = x.shape
+
+        gy *= 1/N
+        y = softmax(x)
+        # convert to one-hot
+        xp = cuda.get_array_module(t.data)
+        t_onehot = xp.eye(CLS_NUM, dtype=t.dtype)[t.data]
+        y = (y - t_onehot) * gy
+        return y
+
+
+def softmax_cross_entropy(x, t):
+    return SoftmaxCrossEntropy()(x, t)
+
 
 class Log(Function):
     def forward(self, x):
-        #xp = cuda.get_array_module(x)
-        #y = xp.log(x)
-        y = np.log(x)
+        xp = cuda.get_array_module(x)
+        y = xp.log(x)
+        #y = np.log(x)
         return y
 
     def backward(self, gy):
@@ -332,9 +384,9 @@ class Clip(Function):
         self.x_max = x_max
 
     def forward(self, x):
-        #xp = cuda.get_array_module(x)
-        #y = xp.clip(x, self.x_min, self.x_max)
-        y = np.clip(x, self.x_min, self.x_max)
+        xp = cuda.get_array_module(x)
+        y = xp.clip(x, self.x_min, self.x_max)
+        #y = np.clip(x, self.x_min, self.x_max)
         return y
 
     def backward(self, gy):
@@ -364,7 +416,8 @@ def as_array(x):
 
 class ReLU(Function):
     def forward(self, x):
-        y = np.maximum(x, 0.0)
+        xp = cuda.get_array_module(x)
+        y = xp.maximum(x, 0.0)
         return y
     
     def backward(self, gy):
@@ -376,3 +429,32 @@ class ReLU(Function):
 
 def relu(x):
     return ReLU()(x)
+
+
+def dropout(x, dropout_ratio=0.5):
+    x = as_variable(x)
+    if Config.train:
+        xp = cuda.get_array_module(x)
+        mask = xp.random.rand(*x.shape) > dropout_ratio
+        scale = xp.array(1.0 - dropout_ratio).astype(x.dtype)
+        y = x * mask / scale
+        return y
+    else:
+        return x
+
+
+from dezero.functions_conv import conv2d
+from dezero.functions_conv import deconv2d
+from dezero.functions_conv import conv2d_simple
+from dezero.functions_conv import im2col
+from dezero.functions_conv import col2im
+from dezero.functions_conv import pooling_simple
+from dezero.functions_conv import pooling
+from dezero.functions_conv import average_pooling
+from dezero.core import add
+from dezero.core import sub
+from dezero.core import rsub
+from dezero.core import mul
+from dezero.core import div
+from dezero.core import neg
+from dezero.core import pow_ as pow
