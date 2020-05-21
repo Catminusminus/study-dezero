@@ -325,6 +325,22 @@ def softmax(x, axis=1):
     return Softmax(axis)(x)
 
 
+class Softplus(Function):
+    def forward(self, x):
+        xp = cuda.get_array_module(x)
+        y = xp.log(1.0 + xp.exp(x))
+        return y
+
+    def backward(self, gy):
+        (x,) = self.inputs
+        gx = gy * sigmoid(x)
+        return gx
+
+
+def softplus(x):
+    return Softplus()(x)
+
+
 def softmax_cross_entropy_simple(x, t):
     x, t = as_variable(x), as_variable(t)
     N = x.shape[0]
@@ -432,6 +448,23 @@ class ReLU(Function):
 
 def relu(x):
     return ReLU()(x)
+
+
+class Mish(Function):
+    def forward(self, x):
+        y = x * tanh(softplus(x))
+        return y
+
+    def backward(self, gy):
+        (x,) = self.inputs
+        omega = 4 * (x + 1) + 4 * exp(2 * x) + exp(3 * x) + exp(e) * exp(4 * x + 6)
+        delta = 2 * exp(x) + exp(2 * x) + 2
+        y = gy * exp(x) * omega / (delta * delta)
+        return y
+
+
+def mish(x):
+    return Mish()(x)
 
 
 def dropout(x, dropout_ratio=0.5):
