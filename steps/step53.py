@@ -17,7 +17,7 @@ batch_size = 100
 
 train_set = dezero.datasets.MNIST(train=True)
 train_loader = dezero.DataLoader(train_set, batch_size)
-model = MLP((1000, 10), activation=F.mish_simple)
+model = MLP((1000, 10))
 optimizer = optimizers.SGD().setup(model)
 
 if os.path.exists("my_mlp.npz"):
