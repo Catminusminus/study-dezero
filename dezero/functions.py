@@ -241,7 +241,7 @@ def linear(x, W, b=None):
 class Sigmoid(Function):
     def forward(self, x):
         xp = cuda.get_array_module(x)
-        #y = 1 / (1 + xp.exp(-x))
+        # y = 1 / (1 + xp.exp(-x))
         y = xp.tanh(x * 0.5) * 0.5 + 0.5  # Better implementation
         return y
 
@@ -264,7 +264,7 @@ class GetItem(Function):
         return y
 
     def backward(self, gy):
-        x, = self.inputs
+        (x,) = self.inputs
         f = GetItemGrad(self.slices, x.shape)
         return f(gy)
 
@@ -277,7 +277,7 @@ class GetItemGrad(Function):
     def forward(self, gy):
         xp = dezero.cuda.get_array_module(gy)
         gx = xp.zeros(self.in_shape, dtype=gy.dtype)
-        #gx = np.zeros(self.in_shape, dtype=gy.dtype)
+        # gx = np.zeros(self.in_shape, dtype=gy.dtype)
         if xp is np:
             np.add.at(gx, self.slices, gy)
         else:
@@ -285,6 +285,7 @@ class GetItemGrad(Function):
         return gx
         # np.add.at(gx, self.slices, gy)
         return gx
+
     def backward(self, ggx):
         return get_item(ggx, self.slices)
 
@@ -335,6 +336,7 @@ def softmax_cross_entropy_simple(x, t):
     y = -1 * sum(tlog_p) / N
     return y
 
+
 class SoftmaxCrossEntropy(Function):
     def forward(self, x, t):
         N = x.shape[0]
@@ -348,7 +350,7 @@ class SoftmaxCrossEntropy(Function):
         x, t = self.inputs
         N, CLS_NUM = x.shape
 
-        gy *= 1/N
+        gy *= 1 / N
         y = softmax(x)
         # convert to one-hot
         xp = cuda.get_array_module(t.data)
@@ -365,11 +367,11 @@ class Log(Function):
     def forward(self, x):
         xp = cuda.get_array_module(x)
         y = xp.log(x)
-        #y = np.log(x)
+        # y = np.log(x)
         return y
 
     def backward(self, gy):
-        x, = self.inputs
+        (x,) = self.inputs
         gx = gy / x
         return gx
 
@@ -386,11 +388,11 @@ class Clip(Function):
     def forward(self, x):
         xp = cuda.get_array_module(x)
         y = xp.clip(x, self.x_min, self.x_max)
-        #y = np.clip(x, self.x_min, self.x_max)
+        # y = np.clip(x, self.x_min, self.x_max)
         return y
 
     def backward(self, gy):
-        x, = self.inputs
+        (x,) = self.inputs
         mask = (x.data >= self.x_min) * (x.data <= self.x_max)
         gx = gy * mask
         return gx
@@ -404,7 +406,7 @@ def accuracy(y, t):
     y, t = as_variable(y), as_variable(t)
 
     pred = y.data.argmax(axis=1).reshape(t.shape)
-    result = (pred == t.data)
+    result = pred == t.data
     acc = result.mean()
     return Variable(as_array(acc))
 
@@ -414,14 +416,15 @@ def as_array(x):
         return np.array(x)
     return x
 
+
 class ReLU(Function):
     def forward(self, x):
         xp = cuda.get_array_module(x)
         y = xp.maximum(x, 0.0)
         return y
-    
+
     def backward(self, gy):
-        x, = self.inputs
+        (x,) = self.inputs
         mask = x.data > 0
         gx = gy * mask
         return gx

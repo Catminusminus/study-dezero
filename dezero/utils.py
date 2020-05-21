@@ -79,7 +79,7 @@ def reshape_sum_backward(gy, x_shape, axis, keepdims):
     tupled_axis = axis
     if axis is None:
         tupled_axis = None
-    elif not hasattr(axis, 'len'):
+    elif not hasattr(axis, "len"):
         tupled_axis = (axis,)
 
     if not (ndim == 0 or tupled_axis is None or keepdims):
@@ -119,13 +119,15 @@ def show_progress(block_num, block_size, total_size):
     downloaded = block_num * block_size
     p = downloaded / total_size * 100
     i = int(downloaded / total_size * 30)
-    if p >= 100.0: p = 100.0
-    if i >= 30: i = 30
+    if p >= 100.0:
+        p = 100.0
+    if i >= 30:
+        i = 30
     bar = "#" * i + "." * (30 - i)
-    print(bar_template.format(bar, p), end='')
+    print(bar_template.format(bar, p), end="")
 
 
-cache_dir = os.path.join(os.path.expanduser('~'), '.dezero')
+cache_dir = os.path.join(os.path.expanduser("~"), ".dezero")
 
 
 def get_file(url, file_name=None):
@@ -139,7 +141,7 @@ def get_file(url, file_name=None):
         str: Absolute path to the saved file.
     """
     if file_name is None:
-        file_name = url[url.rfind('/') + 1:]
+        file_name = url[url.rfind("/") + 1 :]
     file_path = os.path.join(cache_dir, file_name)
 
     if not os.path.exists(cache_dir):

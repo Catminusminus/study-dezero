@@ -29,7 +29,9 @@ class MLP(Model):
 
 
 class VGG16(Model):
-    WEIGHTS_PATH = "https://github.com/koki0702/dezero-models/releases/download/v0.1/vgg16.npz"
+    WEIGHTS_PATH = (
+        "https://github.com/koki0702/dezero-models/releases/download/v0.1/vgg16.npz"
+    )
 
     def __init__(self, pretrained=True):
         super().__init__()
@@ -81,7 +83,7 @@ class VGG16(Model):
 
     @staticmethod
     def preprocess(image, size=(224, 224), dtype=np.float32):
-        image = image.convert('RGB')
+        image = image.convert("RGB")
         if size:
             image = image.resize(size)
         image = np.asarray(image, dtype=dtype)

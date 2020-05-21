@@ -19,7 +19,7 @@ class BetterRNN(Model):
 
     def reset_state(self):
         self.rnn.reset_state()
-    
+
     def forward(self, x):
         y = self.rnn(x)
         y = self.rc(y)
@@ -54,6 +54,6 @@ if __name__ == "__main__":
                 loss.backward()
                 loss.unchain_backward()
                 optimizer.update()
-        
+
         avg_loss = float(loss.data) / count
         print(f"| epoch {epoch + 1} | loss {avg_loss}")

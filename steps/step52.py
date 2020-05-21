@@ -35,6 +35,8 @@ for epoch in range(max_epoch):
         loss.backward()
         optimizer.update()
         sum_loss += float(loss.data) * len(t)
-    
+
     elapsed_time = time.time() - start
-    print(f"epoch: {epoch + 1}, loss: {sum_loss / len(train_set)}, time: {elapsed_time}[sec]")
+    print(
+        f"epoch: {epoch + 1}, loss: {sum_loss / len(train_set)}, time: {elapsed_time}[sec]"
+    )

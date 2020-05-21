@@ -18,7 +18,6 @@ def softmax1d(x):
     return y / sum_y
 
 
-
 if __name__ == "__main__":
     model = MLP((10, 3))
 

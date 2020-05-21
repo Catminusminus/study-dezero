@@ -29,7 +29,7 @@ for epoch in range(max_epochs):
     sum_loss = 0
 
     for i in range(max_iter):
-        batch_index = index[i * batch_size: (i + 1) * batch_size]
+        batch_index = index[i * batch_size : (i + 1) * batch_size]
         batch_x = x[batch_index]
         batch_t = t[batch_index]
 
@@ -40,6 +40,6 @@ for epoch in range(max_epochs):
         optimizer.update()
 
         sum_loss += float(loss.data) * len(batch_t)
-    
+
     avg_loss = sum_loss / data_size
     print(f"epoch {epoch + 1}, loss {avg_loss}")

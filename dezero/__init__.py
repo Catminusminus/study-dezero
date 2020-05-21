@@ -21,7 +21,7 @@ else:
         as_variable,
         setup_variable,
         Config,
-        test_mode
+        test_mode,
     )
     from dezero.layers import Layer
     from dezero.models import Model

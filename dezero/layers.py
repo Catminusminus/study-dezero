@@ -38,11 +38,11 @@ class Layer:
     def cleargrads(self):
         for param in self.params():
             param.cleargrad()
-    
+
     def to_cpu(self):
         for param in self.params():
             param.to_cpu()
-    
+
     def to_gpu(self):
         for param in self.params():
             param.to_gpu()
@@ -62,7 +62,9 @@ class Layer:
 
         params_dict = {}
         self._flatten_params(params_dict)
-        array_dict = {key: param.data for key, param in params_dict.items() if param is not None}
+        array_dict = {
+            key: param.data for key, param in params_dict.items() if param is not None
+        }
 
         try:
             np.savez_compressed(path, **array_dict)
@@ -70,7 +72,7 @@ class Layer:
             if os.path.exists(path):
                 os.remove(path)
             raise
-    
+
     def load_weights(self, path):
         npz = np.load(path)
         params_dict = {}
@@ -110,8 +112,16 @@ class Linear(Layer):
 
 
 class Conv2d(Layer):
-    def __init__(self, out_channels, kernel_size, stride=1,
-                 pad=0, nobias=False, dtype=np.float32, in_channels=None):
+    def __init__(
+        self,
+        out_channels,
+        kernel_size,
+        stride=1,
+        pad=0,
+        nobias=False,
+        dtype=np.float32,
+        in_channels=None,
+    ):
         """Two-dimensional convolutional layer.
         Args:
             out_channels (int): Number of channels of output arrays.
@@ -131,14 +141,14 @@ class Conv2d(Layer):
         self.pad = pad
         self.dtype = dtype
 
-        self.W = Parameter(None, name='W')
+        self.W = Parameter(None, name="W")
         if in_channels is not None:
             self._init_W()
 
         if nobias:
             self.b = None
         else:
-            self.b = Parameter(np.zeros(out_channels, dtype=dtype), name='b')
+            self.b = Parameter(np.zeros(out_channels, dtype=dtype), name="b")
 
     def _init_W(self, xp=np):
         C, OC = self.in_channels, self.out_channels
@@ -194,7 +204,7 @@ class LSTM(Layer):
     def reset_state(self):
         self.h = None
         self.c = None
-    
+
     def forward(self, x):
         if self.h is None:
             f = F.sigmoid(self.x2f(x))
@@ -208,10 +218,10 @@ class LSTM(Layer):
             u = F.tanh(self.x2u(x) + self.h2u(self.h))
 
         if self.c is None:
-            c_new = (i * u)
+            c_new = i * u
         else:
             c_new = (f * self.c) + (i * u)
-        
+
         h_new = o * F.tanh(c_new)
 
         self.h, self.c = h_new, c_new

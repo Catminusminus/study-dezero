@@ -72,8 +72,8 @@ class Adam(Optimizer):
 
     @property
     def lr(self):
-        fix1 = 1. - math.pow(self.beta1, self.t)
-        fix2 = 1. - math.pow(self.beta2, self.t)
+        fix1 = 1.0 - math.pow(self.beta1, self.t)
+        fix2 = 1.0 - math.pow(self.beta2, self.t)
         return self.alpha * math.sqrt(fix2) / fix1
 
     def update_one(self, param):

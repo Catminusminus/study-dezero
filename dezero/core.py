@@ -6,14 +6,15 @@ import dezero
 
 try:
     import cupy
+
     array_types = (np.ndarray, cupy.ndarray)
 except ImportError:
-    array_types = (np.ndarray)
+    array_types = np.ndarray
 
 
 class Config:
     enable_backprop = True
-    train =True
+    train = True
 
 
 class Variable:
@@ -96,7 +97,7 @@ class Variable:
     def to_cpu(self):
         if self.data is not None:
             self.data = dezero.cuda.as_numpy(self.data)
-        
+
     def to_gpu(self):
         if self.data is not None:
             self.data = dezero.cuda.as_cupy(self.data)

@@ -51,6 +51,6 @@ if __name__ == "__main__":
                 loss.backward()
                 loss.unchain_backward()
                 optimizer.update()
-        
+
         avg_loss = float(loss.data) / count
         print(f"| epoch {epoch + 1} | loss {avg_loss}")

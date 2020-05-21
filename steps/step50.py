@@ -37,7 +37,7 @@ for epoch in range(max_epoch):
 
         sum_loss += float(loss.data) * len(t)
         sum_acc += float(acc.data) * len(t)
-    
+
     print(f"epoch: {epoch + 1}")
     print(f"train loss: {sum_loss / len(train_set)}, acc: {sum_acc / len(train_set)}")
 
@@ -49,5 +49,5 @@ for epoch in range(max_epoch):
             acc = F.accuracy(y, t)
             sum_loss += float(loss.data) * len(t)
             sum_acc += float(acc.data) * len(t)
-    
+
     print(f"test loss: {sum_loss / len(test_set)}, acc: {sum_acc / len(test_set)}")

@@ -34,7 +34,7 @@ for epoch in range(max_epoch):
         loss.backward()
         optimizer.update()
         sum_loss += float(loss.data) * len(t)
-    
+
     print(f"epoch: {epoch + 1}, loss: {sum_loss / len(train_set)}")
 
 model.save_weights("my_mlp.npz")
