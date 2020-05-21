@@ -451,6 +451,7 @@ def relu(x):
     return ReLU()(x)
 
 
+# maybe overflow
 class Mish(Function):
     def forward(self, x):
         xp = cuda.get_array_module(x)
